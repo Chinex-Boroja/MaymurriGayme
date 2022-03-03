@@ -7,20 +7,28 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.ihediohachinedu.app.models.BoardSize
+import com.ihediohachinedu.app.models.MemoryCard
 import kotlin.math.min
 
 class MemoryBoardAdapter(
     private val context: Context,
     private val boardSize: BoardSize,
-    private val randomizedImages: List<Int>
+    private val randomizedImages: List<MemoryCard>,
+    private val imageClickListener: ImageClickListener
 ) :
     RecyclerView.Adapter<MemoryBoardAdapter.ViewHolder>(){
 
     companion object {
         private const val MARGIN_SIZE = 10
         private const val TAG = "MemoryBoardAdapter"
+    }
+
+    interface ImageClickListener {
+        fun onImageClicked(position: Int)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -35,22 +43,28 @@ class MemoryBoardAdapter(
         return ViewHolder(view)
     }
 
+    //How many elements in our recycler view
+    override fun getItemCount() = boardSize.numberOfCards
+
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(position)
     }
-
-    //How many elements in our recycler view
-    override fun getItemCount() = boardSize.numberOfCards
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val imageButton = itemView.findViewById<ImageButton>(R.id.imageButton)
 
         fun bind(position: Int) {
-            imageButton.setImageResource(randomizedImages[position])
-            imageButton.setOnClickListener {
-                Log.i(TAG, "Clicked on Postion $position")
-            }
+            val memoryCard = randomizedImages[position]
+            imageButton.setImageResource(if (memoryCard.isFaceUp) memoryCard.identifier else R.drawable.ic_launcher_background)
+            imageButton.alpha = if (memoryCard.isMatched) .4f else 1.0f
+            val colorStateList = if (memoryCard.isMatched) ContextCompat.getColorStateList(context, R.color.color_gray) else null
+            ViewCompat.setBackgroundTintList(imageButton, colorStateList)
 
+            imageButton.setOnClickListener {
+                Log.i(TAG, "Clicked on Position $position")
+                //implement this method on the interface
+                imageClickListener.onImageClicked(position)
+            }
         }
     }
 }
