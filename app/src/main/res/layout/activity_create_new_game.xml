@@ -24,29 +24,43 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="8dp"
-        android:text="Save"
         android:enabled="false"
-        app:layout_constraintStart_toStartOf="parent"
+        android:text="Save"
+        app:layout_constraintBottom_toTopOf="@+id/pBarUpload"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <EditText
         android:id="@+id/eTGameName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="text"
-        android:hint="Game name"
-        android:importantForAutofill="no"
-        android:maxLines="1"
-        android:imeOptions="actionDone"
-        android:digits= "0123456789abcdefghijklmnopqrstuvwxyz_-"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="8dp"
+        android:digits="0123456789abcdefghijklmnopqrstuvwxyz_-"
+        android:ems="10"
+        android:hint="Game name"
+        android:imeOptions="actionDone"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:maxLines="1"
+        android:minHeight="48dp"
         app:layout_constraintBottom_toTopOf="@id/buttonSave"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/pBarUpload"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="610dp" />
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
