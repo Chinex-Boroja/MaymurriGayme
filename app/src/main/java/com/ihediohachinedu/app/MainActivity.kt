@@ -1,6 +1,7 @@
 package com.ihediohachinedu.app
 
 import android.animation.ArgbEvaluator
+import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -17,12 +18,14 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.ihediohachinedu.app.models.BoardSize
-import com.ihediohachinedu.app.models.MemoryCard
 import com.ihediohachinedu.app.models.MemoryGame
+import com.ihediohachinedu.app.models.UserImageList
 import com.ihediohachinedu.app.newgame.CreateNewGame
-import com.ihediohachinedu.app.utils.DEFAULT_ICONS
 import com.ihediohachinedu.app.utils.EXTRA_BOARD_SIZE
+import com.ihediohachinedu.app.utils.EXTRA_GAME_NAME
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -36,10 +39,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var numberOfPairs: TextView
     private lateinit var memoryGame: MemoryGame
     private lateinit var adapter: MemoryBoardAdapter
-
+    private var customGameImages: List<String>? = null
     private lateinit var layoutRoot: ConstraintLayout
-
     private var boardSize: BoardSize = BoardSize.EASY
+
+    //Need for a reference to FireStore
+    private val db = Firebase.firestore
+    private var gameName: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,6 +88,47 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    //play custom game on the main Activity
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == CREATE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            //retrieve new game name
+            val customGameName = data?.getStringExtra(EXTRA_GAME_NAME)
+            if (customGameName == null) {
+                Log.e(TAG, "Got null custom game from CreateNewGame")
+                return
+            }
+            downloadNewGame(customGameName)
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    private fun downloadNewGame(customGameName: String?) {
+        // Query fireStore, retrieve uploaded images and use it to play our custom game
+        //Instead of default vector images
+        db.collection("games").document(customGameName.toString()).get().addOnSuccessListener { document ->
+            //mapping an object to a data class, which contains an image corresponding to
+            // a list of images for a particular game
+            val userImageList = document.toObject(UserImageList::class.java)
+            //if you go pass this if[], then we have found a game successfully
+            if (userImageList?.images == null) {
+                Log.e(TAG, "Invalid custom game data from Firestore")
+                Snackbar.make(layoutRoot, "Sorry, we couldn't find any such game, '$customGameName'", Snackbar.LENGTH_SHORT).show()
+                return@addOnSuccessListener
+            }
+            //re-setup the recyclerview with this custom data
+            val numImages = userImageList.images.size * 2
+            //set the boardSize based on the number of images
+            boardSize = BoardSize.getByValue(numImages)
+            //after querying Firestore, we are going to get
+            customGameImages = userImageList.images
+            setupGame()
+            gameName = customGameName
+
+        }.addOnFailureListener { exception ->
+            Log.e(TAG, "Exception when retrieving game", exception)
+        }
     }
 
     private fun displayCreationDialog() {
@@ -152,7 +199,7 @@ class MainActivity : AppCompatActivity() {
         }
         numberOfPairs.setTextColor(ContextCompat.getColor(this, R.color.color_progress_none))
         //construct a list of memory game
-        memoryGame = MemoryGame(boardSize)
+        memoryGame = MemoryGame(boardSize, customGameImages)
         adapter = MemoryBoardAdapter(this, boardSize, memoryGame.images, object: MemoryBoardAdapter.ImageClickListener {
             override fun onImageClicked(position: Int) {
                 updateGameWithFlip(position)
