@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "3951327735",
+    "project_id": "memory-game-df362",
+    "storage_bucket": "memory-game-df362.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:3951327735:android:9657ff90df95cd3f7056f2",
+        "android_client_info": {
+          "package_name": "com.ihediohachinedu.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "3951327735-ptuilvpp1nnf4c1f6gpf4fb4tt1mb66i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDd0-Pi15j_G4lAD4p-_bhe0Pv7r9e99Z8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "3951327735-ptuilvpp1nnf4c1f6gpf4fb4tt1mb66i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
