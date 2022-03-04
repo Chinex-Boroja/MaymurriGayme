@@ -1,6 +1,7 @@
 package com.ihediohachinedu.app.newgame
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -15,19 +16,17 @@ import android.text.InputFilter
 import android.text.TextWatcher
 import android.util.Log
 import android.view.MenuItem
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.Toast
+import android.view.View
+import android.widget.*
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import com.ihediohachinedu.app.ImageSelectorAdapter
 import com.ihediohachinedu.app.R
 import com.ihediohachinedu.app.models.BoardSize
-import com.ihediohachinedu.app.utils.BitmapScaler
-import com.ihediohachinedu.app.utils.EXTRA_BOARD_SIZE
-import com.ihediohachinedu.app.utils.isPermissionGranted
-import com.ihediohachinedu.app.utils.requestPermission
+import com.ihediohachinedu.app.utils.*
 import java.io.ByteArrayOutputStream
 
 class CreateNewGame : AppCompatActivity() {
@@ -48,10 +47,14 @@ class CreateNewGame : AppCompatActivity() {
     private lateinit var rvImageSelector: RecyclerView
     private lateinit var eTGameName: EditText
     private lateinit var buttonSave: Button
+    private lateinit var pBarUpload: ProgressBar
 
     private lateinit var adapter: ImageSelectorAdapter
 
     private val selectedImageUris = mutableListOf<Uri>()
+    //getting a reference from Firebase storage and fire store
+    private val storage = Firebase.storage
+    private val db = Firebase.firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +63,7 @@ class CreateNewGame : AppCompatActivity() {
         rvImageSelector = findViewById(R.id.imageSelector)
         eTGameName = findViewById(R.id.eTGameName)
         buttonSave = findViewById(R.id.buttonSave)
+        pBarUpload = findViewById(R.id.pBarUpload)
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         boardSize = intent.getSerializableExtra(EXTRA_BOARD_SIZE) as BoardSize
@@ -147,14 +151,90 @@ class CreateNewGame : AppCompatActivity() {
     }
 
     private fun saveDataToFirebase() {
-        //Logic for downscaling the images for the games
         Log.i(TAG, "saveDataToFirebase")
+        buttonSave.isEnabled = false
+        val customGameName = eTGameName.text.toString()
+        //Check that we are not overwriting someone else's data
+        db.collection("games").document(customGameName).get().addOnSuccessListener { document->
+            if (document != null && document.data != null) {
+                AlertDialog.Builder(this)
+                    .setTitle("Name taken")
+                    .setMessage("A game already exist with the name '$customGameName'. Please type another name")
+                    .setPositiveButton("OK", null)
+                    .show()
+                buttonSave.isEnabled = true
+            } else {
+                handleImageUploading(customGameName)
+            }
+        }.addOnFailureListener { exception ->
+            Log.e(TAG, "Encountered error while saving game", exception)
+            Toast.makeText(this, "Encountered error while saving game", Toast.LENGTH_SHORT).show()
+            buttonSave.isEnabled = true
+        }
+    }
+
+    private fun handleImageUploading(customGameName: String) {
+        pBarUpload.visibility = View.VISIBLE
+        //Logic for downscaling the images for the games
+        var didEncounterError = false
+        val uploadedImageUrls = mutableListOf<String>()
         //iterate over the selected image Uris with index and elements are imageUri
         for ((index, imageUri) in selectedImageUris.withIndex())  {
             //imageByteArray is going to be uploaded to Firebase
             val imageByteArray = getImageByteArray(imageUri)
-
+            val filePath = "images/$customGameName/${System.currentTimeMillis()}-${index}.jpg"
+            val imageReference = storage.reference.child(filePath)
+            imageReference.putBytes(imageByteArray)
+                .continueWithTask { photoUploadTask ->
+                    Log.i(TAG, "Uploaded bytes: ${photoUploadTask.result?.bytesTransferred}")
+                    imageReference.downloadUrl
+                }.addOnCompleteListener { downloadUrlTask ->
+                    if (!downloadUrlTask.isSuccessful) {
+                        Log.e(TAG, "Exception with Firebase storage", downloadUrlTask.exception)
+                        Toast.makeText(this, "Failed to upload image", Toast.LENGTH_SHORT).show()
+                        didEncounterError = true
+                        return@addOnCompleteListener
+                    }
+                    if (didEncounterError) {
+                        pBarUpload.visibility = View.GONE
+                        return@addOnCompleteListener
+                    }
+                    val downloadUrl = downloadUrlTask.result.toString()
+                    uploadedImageUrls.add(downloadUrl)
+                    pBarUpload.progress = uploadedImageUrls.size * 100 / selectedImageUris.size
+                    Log.i(TAG, "Finished uploading $imageUri, num uploaded ${uploadedImageUrls.size}")
+                    if (uploadedImageUrls.size == selectedImageUris.size) {
+                        handleAllImagesUploaded(customGameName, uploadedImageUrls)
+                    }
+                }
         }
+
+    }
+
+    private fun handleAllImagesUploaded(
+        customGameName: String,
+        uploadedImageUrls: MutableList<String>
+    ) {
+        // TODO: upload this info to Firestore
+        db.collection("games").document(customGameName)
+            .set(mapOf("images" to uploadedImageUrls))
+            .addOnCompleteListener { gameCreationTask ->
+                pBarUpload.visibility = View.GONE
+                if (!gameCreationTask.isSuccessful) {
+                    Log.e(TAG, "Exception with game creation", gameCreationTask.exception)
+                    Toast.makeText(this, "Failed game creation", Toast.LENGTH_SHORT).show()
+                    return@addOnCompleteListener
+                }
+                Log.i(TAG, "Successfully created game $customGameName")
+                AlertDialog.Builder(this)
+                    .setTitle("Upload complete! Let's play your game '$customGameName'")
+                    .setPositiveButton("Ok") {_,_ ->
+                        val resultData = Intent()
+                        resultData.putExtra(EXTRA_GAME_NAME, customGameName)
+                        setResult(Activity.RESULT_OK, resultData)
+                        finish()
+                    }.show()
+            }
     }
 
     //This method is going to take care of all the downgrading
@@ -172,7 +252,7 @@ class CreateNewGame : AppCompatActivity() {
         Log.i(TAG, "Scaled width ${scaleBitmap.width} and height ${scaleBitmap.height}")
 
         val byteOutputStream = ByteArrayOutputStream()
-        scaleBitmap.compress(Bitmap.CompressFormat.JPEG, 60, byteOutputStream)
+        scaleBitmap.compress(Bitmap.CompressFormat.JPEG, 85, byteOutputStream)
         return byteOutputStream.toByteArray()
     }
 
