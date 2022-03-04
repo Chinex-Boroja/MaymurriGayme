@@ -2,7 +2,7 @@ package com.ihediohachinedu.app.models
 
 import com.ihediohachinedu.app.utils.DEFAULT_ICONS
 
-class MemoryGame(private val boardSize: BoardSize) {
+class MemoryGame(private val boardSize: BoardSize, private val customGameImages: List<String>?) {
 
     val images: List<MemoryCard>
     var numberOfPairsFound = 0
@@ -11,9 +11,15 @@ class MemoryGame(private val boardSize: BoardSize) {
     private var indexOfSingleSelectedImage: Int? = null
 
     init {
-        val chosenImages = DEFAULT_ICONS.shuffled().take(boardSize.getNumberOfPairs())
-        val randomizedImages = (chosenImages + chosenImages).shuffled()
-        images = randomizedImages.map { MemoryCard(it, false, false) }
+        if (customGameImages == null) {
+            val chosenImages = DEFAULT_ICONS.shuffled().take(boardSize.getNumberOfPairs())
+            val randomizedImages = (chosenImages + chosenImages).shuffled()
+            images = randomizedImages.map { MemoryCard(it) }
+        } else {
+            val randomizedImages = (customGameImages + customGameImages).shuffled()
+            //taking an image url and converting to a unique integer
+            images = randomizedImages.map { MemoryCard(it.hashCode(), it) }
+        }
     }
 
     fun flipImage(position: Int): Boolean{
