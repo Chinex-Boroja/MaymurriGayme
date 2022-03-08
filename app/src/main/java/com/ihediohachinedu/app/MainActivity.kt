@@ -3,6 +3,7 @@ package com.ihediohachinedu.app
 import android.animation.ArgbEvaluator
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -10,13 +11,16 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.github.jinatonic.confetti.CommonConfetti
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -26,6 +30,7 @@ import com.ihediohachinedu.app.models.UserImageList
 import com.ihediohachinedu.app.newgame.CreateNewGame
 import com.ihediohachinedu.app.utils.EXTRA_BOARD_SIZE
 import com.ihediohachinedu.app.utils.EXTRA_GAME_NAME
+import com.squareup.picasso.Picasso
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -40,7 +45,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var memoryGame: MemoryGame
     private lateinit var adapter: MemoryBoardAdapter
     private var customGameImages: List<String>? = null
-    private lateinit var layoutRoot: ConstraintLayout
+    private lateinit var layoutRoot: CoordinatorLayout
     private var boardSize: BoardSize = BoardSize.EASY
 
     //Need for a reference to FireStore
@@ -86,9 +91,14 @@ class MainActivity : AppCompatActivity() {
                 displayCreationDialog()
                 return true
             }
+            R.id.download_menu_item -> {
+                displayDownloadDialog()
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }
+
 
     //play custom game on the main Activity
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -102,6 +112,16 @@ class MainActivity : AppCompatActivity() {
             downloadNewGame(customGameName)
         }
         super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    private fun displayDownloadDialog() {
+        val boardDownloadView = LayoutInflater.from(this).inflate(R.layout.dialog_download_board, null)
+        displayAlertDialog("Fetch Memory Game", boardDownloadView, View.OnClickListener {
+            // Grab the text of the game name that the user wants to download
+            val etDownloadGame = boardDownloadView.findViewById<EditText>(R.id.eTDownload_game)
+            val gameToDownload = etDownloadGame.text.toString()
+            downloadNewGame(gameToDownload)
+        })
     }
 
     private fun downloadNewGame(customGameName: String?) {
@@ -123,8 +143,13 @@ class MainActivity : AppCompatActivity() {
             boardSize = BoardSize.getByValue(numImages)
             //after querying Firestore, we are going to get
             customGameImages = userImageList.images
-            setupGame()
+            for (imageUrl in userImageList.images) {
+                Picasso.get().load(imageUrl).fetch()
+            }
+            Snackbar.make(layoutRoot, "You are now playing '$customGameName'!", Snackbar.LENGTH_SHORT).show()
             gameName = customGameName
+            setupGame()
+
 
         }.addOnFailureListener { exception ->
             Log.e(TAG, "Exception when retrieving game", exception)
@@ -168,6 +193,8 @@ class MainActivity : AppCompatActivity() {
                 else -> BoardSize.HARD
             }
             //reload the game
+            gameName = null
+            customGameImages = null
             setupGame()
         })
     }
@@ -183,6 +210,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupGame() {
+        supportActionBar?.title = gameName ?: getString(R.string.app_name)
         when (boardSize) {
             BoardSize.EASY -> {
                 numberOfMoves.text = "Easy: 4 x 2"
@@ -235,6 +263,7 @@ class MainActivity : AppCompatActivity() {
             numberOfPairs.text = "Pairs: ${memoryGame.numberOfPairsFound} / ${boardSize.getNumberOfPairs()}"
             if (memoryGame.haveWonGame()) {
                 Snackbar.make(layoutRoot, "You won! Congratulations.", Snackbar.LENGTH_LONG).show()
+                CommonConfetti.rainingConfetti(layoutRoot, intArrayOf(Color.MAGENTA, Color.BLUE, Color.YELLOW)).oneShot()
             }
         }
         numberOfMoves.text = "Moves: ${memoryGame.getNumberOfMoves()}"
