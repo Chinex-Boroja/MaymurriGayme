@@ -15,7 +15,7 @@
             android:id="@+id/layoutGameInfo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:background="?colorSecondaryVariant"
+            android:background="@color/orange_darkest"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -35,8 +35,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
+                    android:background="@color/white"
                     android:padding="10dp"
-                    android:text="Moves: 0"
+                    android:text="@string/moves_0"
                     android:textAppearance="@style/TextAppearance.AppCompat.Large" />
             </androidx.cardview.widget.CardView>
 
@@ -53,7 +54,8 @@
                     android:layout_height="match_parent"
                     android:gravity="center"
                     android:padding="10dp"
-                    android:text="Pairs: 0 / 4"
+                    android:background="@color/white"
+                    android:text="@string/pairs_0_4"
                     android:textAppearance="@style/TextAppearance.AppCompat.Large" />
             </androidx.cardview.widget.CardView>
 
