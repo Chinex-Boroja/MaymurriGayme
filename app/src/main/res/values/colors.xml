@@ -10,4 +10,9 @@
     <color name="color_gray">#D3D3D3D3</color>
     <color name="color_progress_none">#DC1E0b</color>
     <color name="color_progress_full">#35ba01</color>
+    <color name="orange">#EB8F42</color>
+    <color name="orange_dark">#D46231</color>
+    <color name="orange_darkest">#F65739</color>
+    <color name="orange_light">#D49131</color>
+    <color name="orange_lightest"> #F6BC39</color>
 </resources>
