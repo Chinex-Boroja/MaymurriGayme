@@ -1,4 +1,4 @@
-package com.ihediohachinedu.app
+package com.ihediohachinedu.app.adapters
 
 import android.content.Context
 import android.util.Log
@@ -10,6 +10,7 @@ import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.ihediohachinedu.app.R
 import com.ihediohachinedu.app.models.BoardSize
 import com.ihediohachinedu.app.models.MemoryCard
 import com.squareup.picasso.Picasso
@@ -68,7 +69,9 @@ class MemoryBoardAdapter(
                 imageButton.setImageResource(R.drawable.game_default)
             }
             imageButton.alpha = if (memoryCard.isMatched) .4f else 1.0f
-            val colorStateList = if (memoryCard.isMatched) ContextCompat.getColorStateList(context, R.color.color_gray) else null
+            val colorStateList = if (memoryCard.isMatched) ContextCompat.getColorStateList(context,
+                R.color.color_gray
+            ) else null
             ViewCompat.setBackgroundTintList(imageButton, colorStateList)
 
             imageButton.setOnClickListener {

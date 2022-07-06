@@ -15,7 +15,6 @@ import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
@@ -24,6 +23,7 @@ import com.github.jinatonic.confetti.CommonConfetti
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.ihediohachinedu.app.adapters.MemoryBoardAdapter
 import com.ihediohachinedu.app.models.BoardSize
 import com.ihediohachinedu.app.models.MemoryGame
 import com.ihediohachinedu.app.models.UserImageList

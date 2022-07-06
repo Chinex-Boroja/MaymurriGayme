@@ -23,7 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
-import com.ihediohachinedu.app.ImageSelectorAdapter
+import com.ihediohachinedu.app.adapters.ImageSelectorAdapter
 import com.ihediohachinedu.app.R
 import com.ihediohachinedu.app.models.BoardSize
 import com.ihediohachinedu.app.utils.*

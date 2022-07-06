@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="Gradle: com.github.jinatonic.confetti:confetti:1.1.2@aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/d49e54c25f55565b73e40d31e00028f0/transformed/confetti-1.1.2/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/d49e54c25f55565b73e40d31e00028f0/transformed/confetti-1.1.2/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/d49e54c25f55565b73e40d31e00028f0/transformed/confetti-1.1.2/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.jinatonic.confetti/confetti/1.1.2/e4541dd11fea50bb6788d41ff0f2c131ac8f72ff/confetti-1.1.2-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.jinatonic.confetti/confetti/1.1.2/b67562ac1ab960e1538ca984e5c1f0381312b1f3/confetti-1.1.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
